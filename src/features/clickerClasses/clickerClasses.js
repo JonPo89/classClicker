@@ -37,8 +37,7 @@ export class ProducerClass {
             }
         return cost;
         }
-        
-        return cost;
+
     }
 
     maxCost(funds) {

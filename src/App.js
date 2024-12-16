@@ -26,7 +26,6 @@ function App() {
   useEffect(() => {
     let pointsPerSecond = 0;
     producers.forEach(producer => {
-      
       const productionTime = producer.calculateProductionTime();
       const productionValue = producer.calculateProductionValue();
       if (producer.level > 0) {
@@ -44,62 +43,30 @@ function App() {
         
       }
     })
-    if (pointsPerSecond > 0){
+    if (pointsPerSecond > 0){ 
       setPPs(pointsPerSecond);
-      let timePerPoint = 1000/pointsPerSecond;
+      const timePerPoint = 1000/pointsPerSecond;
+
       if (timersRef.current.globalInterval){
         clearInterval(timersRef.current.globalInterval);
       }
-      if (timePerPoint > 1) {
-        timersRef.current.globalInterval = setInterval(() => {
-          setFunds((prevFunds) => prevFunds + 1)
-        }, timePerPoint);
-      } else {
-        timersRef.current.globalInterval = setInterval(() => {
-          setFunds((prevFunds) => prevFunds + Math.floor((pointsPerSecond / 100)))
-        },(10))
-      }
-      
+
+      timersRef.current.globalInterval = setInterval(() => {
+        setFunds((prevFunds) => prevFunds + Math.max(1, Math.floor((pointsPerSecond / 100))))
+      }, Math.max(10, timePerPoint));
+
     }
 
+    const intervalId = timersRef.current.globalInterval
+
     return () => {
-      if (timersRef.current.globalInterval) {
-        clearInterval(timersRef.current.globalInterval);
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     }
     
 
   }, [funds, producers, levelUpRef, maxLevelUpRef])
-
-
-  useEffect(() => {
-    producers.forEach(producer => {
-      let currentTimer = timersRef.current[producer.name]
-      const productionTime = producer.calculateProductionTime();
-      const productionValue = producer.calculateProductionValue();
-
-      if (!currentTimer || currentTimer.productionTime !== productionTime){
-        if (currentTimer?.id) clearInterval(currentTimer.id);
-
-        const intervalId = setInterval(() => {
-          setFunds((prevFunds) => prevFunds + Math.round(productionValue))
-        }, (productionTime*1000))
-
-        timersRef.current[producer.name] = {
-          id: intervalId,
-          productionTime: productionTime,
-          productionValue: productionValue
-        }
-        
-      }
-    })
-
-    return () => {
-      Object.values(timersRef.current).forEach((timer) => {
-        clearInterval(timer.id);
-      });
-    };
-  }, [producers])
   
   useEffect(() => {
     producers.forEach(producer => {
